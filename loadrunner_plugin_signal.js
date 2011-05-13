@@ -33,6 +33,7 @@ loadrunner(function(using, provide, loadrunner, define) {
   // signal because such events match '>foo'
   function signal(id) {
     var dep;
+    if (id.charAt(0)=='>') id=id.substring(1);
     if (dep = Signal.inProgress[id]) {
       dep.complete();
       delete Signal.inProgress[id];
@@ -58,8 +59,8 @@ loadrunner(function(using, provide, loadrunner, define) {
       Signal.inProgress[this.param] = this;
     }
   }
-  using.matchers.add(/^event\!/, function(id) {
-    return new Signal(id.split('event!')[1]);
+  using.matchers.add(/^>/, function(id) {
+    return new Signal(id.substring(1));
   });
 
   window.signal = signal;
