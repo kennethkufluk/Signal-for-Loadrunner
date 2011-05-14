@@ -3,7 +3,7 @@
 Loadrunner Signals
 ------------------
 
-This plugin extends [Loadrunner|https://github.com/danwrong/loadrunner] to depend on arbitrarily triggered
+This plugin extends [Loadrunner](https://github.com/danwrong/loadrunner) to depend on arbitrarily triggered
 events which need only be fired once.
 
 To depend on an arbitrary signal, foo:
