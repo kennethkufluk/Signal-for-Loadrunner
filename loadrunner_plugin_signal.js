@@ -20,49 +20,35 @@
   ONLY USE IF THE SCRIPT AND MODULE TYPES CANNOT BE USED.
 
 */
-loadrunner(function(using, provide, loadrunner, define) {
-  function indexOf(arr, thing) {
-    for (var i=0, item; item = arr[i]; i++) {
-      if (thing == item) {
-        return i;
-      }
-    }
-    return -1;
-  }
+(function(context) {
+  loadrunner(function(using, provide, loadrunner) {
 
-  // signal because such events match '>foo'
-  function signal(id) {
-    var dep;
-    if (id.charAt(0)=='>') id=id.substring(1);
-    if (dep = Signal.inProgress[id]) {
+    // This is the trigger method. Call signal('>thing');
+    function signal(id) {
+      var dep;
+      if (id.charAt(0)=='>') id=id.substring(1);
+
+      dep = new Signal(id);
       dep.complete();
-      delete Signal.inProgress[id];
     }
-    Signal.done.push(id);
-  }
 
-  var Signal = function(param) {
-    this.param = param;
-  }
-  Signal.inProgress = [];
-  Signal.done = [];
-  Signal.prototype = new loadrunner.Dependency;
-  Signal.prototype.start = function() {
-    var dep, me = this;
-    if (indexOf(Signal.done, this.param) != -1) {
-      this.complete();
-    } else if (dep = Signal.inProgress[this.param]) {
-      dep.then(function() {
-        me.complete();
-      });
-    } else {
-      Signal.inProgress[this.param] = this;
+    var Signal = function(id) {
+      this.id = id;
     }
-  }
-  using.matchers.add(/^>/, function(id) {
-    return new Signal(id.substring(1));
+    Signal.prototype = new loadrunner.Dependency;
+    Signal.prototype.key = function() {
+      return 'signal_' + this.id;
+    }
+    Signal.prototype.shouldFetch = function() {
+      return false;
+    }
+
+    // To wait for a signal, do using('>thing', function() {...})
+    using.matchers.add(/^>/, function(id) {
+      return new Signal(id.substring(1));
+    });
+
+    context.signal = signal;
+
   });
-
-  window.signal = signal;
-
-});
+}(this));

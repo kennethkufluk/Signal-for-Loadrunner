@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>signal test</title>
+    <link rel="stylesheet" href="vendor/qunit/qunit.css" type="text/css" charset="utf-8">
+    <script src="vendor/qunit/qunit.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body>
+    <h1 id="qunit-header">signal test</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+
+    <script type="text/javascript" charset="utf-8">
+     function runTests() {
+
+       using('loadrunner_plugin_signal.js', function() {
+          QUnit.module('Signal Tests');
+
+           QUnit.test('should execute a function upon signal', function() {
+             expect(1);
+             stop(200);
+             using('>signal1', function() {
+               ok(true, 'made it');
+               start();
+             });
+             signal('>signal1');
+           });
+
+           QUnit.test('should not execute a function twice after two signals', function() {
+             expect(1);
+             stop(200);
+             var counter= 0;
+             using('>signal2', function() {
+               counter++;
+               start();
+             });
+             signal('>signal2');
+             signal('>signal2');
+             ok(counter==1, 'ran more than once');
+           });
+
+           QUnit.test('does not execute a function without a signal', function() {
+             expect(1);
+             var counter= 0;
+             using('>signal3', function() {
+               counter++;
+             });
+             ok(counter==0, "ran when it shouldn't have");
+           });
+
+           QUnit.test('does not execute a function with the wrong signal', function() {
+             expect(1);
+             var counter= 0;
+             using('>signal4', function() {
+               counter++;
+             });
+             signal('>signal5');
+             ok(counter==0, "ran when it shouldn't have");
+           });
+
+       });
+
+     }
+    </script>
+
+    <script type="text/javascript" charset="utf-8">
+      (function(){
+          function indexOf(arr, thing) {
+            for (var i=0, item; item = arr[i]; i++) {
+              if (thing == item) {
+                return i;
+              }
+            }
+
+            return -1;
+          }
+
+          var a = document.createElement('script');
+          a.type = 'text/javascript';
+          a.async = true;
+          a.src = 'vendor/loadrunner/loadrunner.js';
+
+          a.onload = runTests;
+
+          a.onreadystatechange = function () {
+            if (indexOf(['loaded', 'complete'], this.readyState) > -1) {
+              this.onreadystatechange = null;
+              runTests();
+            }
+          };
+
+          var s = document.getElementsByTagName('script')[0];
+          s.parentNode.insertBefore(a, s);
+      })();
+    </script>
+  </body>
+</html>
